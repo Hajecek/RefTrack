@@ -25,16 +25,18 @@ if (!isset($_SESSION['ip_address'])) {
 
 function redirectWithError($error_message) {
     $encoded_error = urlencode($error_message);
-    $paths = array("../auth/login", "../../auth/login");
     
-    foreach ($paths as $path) {
-        if (file_exists($path . ".php")) {
-            header("Location: $path?error=$encoded_error");
-            exit();
-        }
+    // Zjištění aktuální cesty
+    $current_dir = dirname($_SERVER['PHP_SELF']);
+    
+    // Určení relativní cesty k login stránce
+    if (strpos($current_dir, '/auth') !== false) {
+        // Jsme v adresáři auth nebo jeho podadresáři
+        header("Location: ./login?error=$encoded_error");
+    } else {
+        // Jsme mimo adresář auth
+        header("Location: ./auth/login?error=$encoded_error");
     }
-    
-    header("Location: ../auth/login?error=$encoded_error");
     exit();
 }
 
@@ -52,8 +54,11 @@ if (!isset($_SESSION['last_activity'])) {
     $_SESSION['last_activity'] = time();
 }
 
+// Připojení k databázi - toto chybělo v původním auth.php
+include_once __DIR__ . "/db_conn.php";
+
 $user_id = $_SESSION['user_id'];
-$sql = "SELECT * FROM users WHERE user_id = ?";
+$sql = "SELECT * FROM users WHERE id = ?";  // opraveno z user_id na id podle struktury tabulky
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -63,12 +68,15 @@ if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $user_role = $row['role'];
     
+    // Kontrola role - přístup povolíme všem přihlášeným
+    // Pokud chcete povolit přístup pouze administrátorům, odkomentujte následující podmínku
+    /*
     if ($user_role !== ROLE_ADMIN && $user_role !== ROLE_ADMIN_CEO) {
         redirectWithError("Nemáte dostatečné oprávnění!");
     }
+    */
 } else {
-    echo htmlspecialchars("Nemáte dostatečné oprávnění.", ENT_QUOTES, 'UTF-8');
-    exit();
+    redirectWithError("Uživatel nebyl nalezen v databázi!");
 }
 
 // Zde pokračuje váš kód pro autorizované uživatele
@@ -89,4 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Zpracování formuláře
 }
 */
-?>
+
+if ($error) { ?>
+    <p class="error" id="error-message"><?php echo $error; ?></p>
+<?php } ?>

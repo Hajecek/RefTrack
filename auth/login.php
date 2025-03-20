@@ -71,11 +71,17 @@ $info = isset($_GET['info']) ? $_GET['info'] : '';
     <div class="contact-wrapper">
         <header class="login-cta">
             <h2><img src="../config/img/logo_v2new.png" alt="" style="width:50px;height:auto"></h2>
+            
             <?php if ($error) { ?>
-                <p class="error" id="error-message"><?php echo $error; ?></p>
+                <div class="login-status error">
+                    <p><i class="fas fa-exclamation-circle"></i> <?php echo $error; ?></p>
+                </div>
             <?php } ?>
+            
             <?php if ($info) { ?>
-                <p class="info" id="info-message"><?php echo $info; ?></p>
+                <div class="login-status success">
+                    <p><i class="fas fa-check-circle"></i> <?php echo $info; ?></p>
+                </div>
             <?php } ?>
         </header>
 

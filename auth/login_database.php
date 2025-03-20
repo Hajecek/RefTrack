@@ -61,17 +61,8 @@ if (isset($_POST['login_id']) && isset($_POST['password'])) {
                 exit();
             }
 
-            // Pokud není redirect, použijeme standardní přesměrování
-            switch($row['role']) {
-                case 'Admin':
-                    header("Location: ../admin/dashboard");
-                    break;
-                case 'Uživatel':
-                    header("Location: ../user/home");
-                    break;
-                default:
-                    header("Location: ../user/home");
-            }
+            // Všichni uživatelé jdou na dashboard bez ohledu na roli
+            header("Location: ../dashboard");
             exit();
         } else {
             // Neplatné přihlašovací údaje
