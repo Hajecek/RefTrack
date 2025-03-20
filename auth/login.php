@@ -9,101 +9,197 @@ $info = isset($_GET['info']) ? $_GET['info'] : '';
 <html>
 <head>
     <title>Přihlášení</title>
-    <link rel="stylesheet" type="text/css" href="../config/css/login.css">
-    <link rel="icon" href="../config/img/logo.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500&display=swap" rel="stylesheet">
+    <link rel="icon" href="../config/img/logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        .form-row input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .form-row button {
-            width: 100%;
-            padding: 12px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .form-row button:hover {
-            background: #0056b3;
-        }
-        .login-status {
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        .login-status p {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-to-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        
+        .back-to-home a {
+            color: #2997ff;
+            text-decoration: none;
             font-size: 16px;
-            font-weight: 500;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.2s;
+        }
+        
+        .back-to-home a:hover {
+            opacity: 0.8;
+        }
+        
+        .login-container {
+            width: 90%;
+            max-width: 380px;
+            padding: 30px;
+            border-radius: 20px;
+            background-color: #1c1c1e;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo img {
+            width: 60px;
+            height: auto;
+            border-radius: 12px;
+        }
+        
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background-color: #2c2c2e;
+            color: #fff;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        
+        .form-group input:focus {
+            background-color: #3a3a3c;
+            outline: none;
+        }
+        
+        .form-group input::placeholder {
+            color: #8e8e93;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background-color: #2997ff;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #148eff;
+        }
+        
+        .forgot-password {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .forgot-password a {
+            color: #2997ff;
+            text-decoration: none;
+            font-size: 15px;
+            transition: opacity 0.2s;
+        }
+        
+        .forgot-password a:hover {
+            opacity: 0.8;
+        }
+        
+        .status-message {
+            padding: 16px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
         }
-
-        .login-status.success {
-            background-color: rgba(52, 199, 89, 0.1);
-            border: none;
+        
+        .status-message.error {
+            background-color: rgba(255, 69, 58, 0.2);
+            color: #ff453a;
         }
-
-        .login-status.error {
-            background-color: rgba(255, 59, 48, 0.1);
-            border: none;
+        
+        .status-message.success {
+            background-color: rgba(48, 209, 88, 0.2);
+            color: #30d158;
         }
     </style>
 </head>
 <body>
-    <div class="back-to-home"><a href="../">← Zpět domů </a></div>
-    <div class="contact-wrapper">
-        <header class="login-cta">
-            <h2><img src="../config/img/logo_v2new.png" alt="" style="width:50px;height:auto"></h2>
-            
-            <?php if ($error) { ?>
-                <div class="login-status error">
-                    <p><i class="fas fa-exclamation-circle"></i> <?php echo $error; ?></p>
-                </div>
-            <?php } ?>
-            
-            <?php if ($info) { ?>
-                <div class="login-status success">
-                    <p><i class="fas fa-check-circle"></i> <?php echo $info; ?></p>
-                </div>
-            <?php } ?>
-        </header>
-
+    <div class="back-to-home">
+        <a href="../"><i class="fas fa-chevron-left"></i>&nbsp; Zpět domů</a>
+    </div>
+    
+    <div class="login-container">
+        <div class="logo">
+            <img src="../config/img/logo-reftrack.png" alt="Logo">
+        </div>
+        
+        <h1 class="login-title">Přihlášení</h1>
+        
+        <?php if ($error) { ?>
+            <div class="status-message error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span><?php echo $error; ?></span>
+            </div>
+        <?php } ?>
+        
+        <?php if ($info) { ?>
+            <div class="status-message success">
+                <i class="fas fa-check-circle"></i>
+                <span><?php echo $info; ?></span>
+            </div>
+        <?php } ?>
+        
         <form action="login_database.php" method="post" id="login-form">
             <?php if(isset($_GET['redirect'])){ ?>
                 <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_GET['redirect']); ?>">
             <?php } ?>
             
-            <div class="form-row">
+            <div class="form-group">
                 <input type="text" name="login_id" placeholder="Uživatelské jméno nebo email" autofocus>
             </div>
-            <div class="form-row">
+            
+            <div class="form-group">
                 <input type="password" name="password" placeholder="Heslo">
             </div>
-            <div class="form-row">
-                <button type="submit">Přihlásit se</button>
-            </div>
+            
+            <button type="submit" class="submit-btn">Přihlásit se</button>
         </form>
-
-        <!-- Přidáno tlačítko pro zapomenuté heslo -->
-        <div class="form-row" style="margin-top: 15px;">
-            <a href="recovery" style="color: #666; text-decoration: none; font-size: 14px;">
+        
+        <div class="forgot-password">
+            <a href="recovery">
                 <i class="fas fa-question-circle"></i> Zapomenuté heslo
             </a>
         </div>
