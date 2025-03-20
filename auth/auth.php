@@ -97,7 +97,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Zpracování formuláře
 }
 */
-
-if ($error) { ?>
-    <p class="error" id="error-message"><?php echo $error; ?></p>
-<?php } ?>
