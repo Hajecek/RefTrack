@@ -12,16 +12,19 @@ function validate($data){
     return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
 }
 
-// Běžný postup přihlášení pomocí jména/emailu a hesla
+// Běžný postup přihlášení pomocí jména/emailu a PIN kódu
 if (isset($_POST['login_id']) && isset($_POST['password'])) {
     $login_id = validate($_POST['login_id']);
-    $pass = validate($_POST['password']);
+    $pin = validate($_POST['password']);
 
     if (empty($login_id)) {
         header("Location: ./login?error=" . urlencode("Zadej uživatelské jméno nebo email!"));
         exit();
-    } elseif (empty($pass)) {
-        header("Location: ./login?error=" . urlencode("Zadej heslo!"));
+    } elseif (empty($pin)) {
+        header("Location: ./login?error=" . urlencode("Zadej PIN kód!"));
+        exit();
+    } elseif (strlen($pin) !== 5 || !ctype_digit($pin)) {
+        header("Location: ./login?error=" . urlencode("PIN kód musí být 5místné číslo!"));
         exit();
     } else {
         // Použití prepared statement pro prevenci SQL injection
@@ -36,7 +39,7 @@ if (isset($_POST['login_id']) && isset($_POST['password'])) {
             $row = mysqli_fetch_assoc($result);
 
             // Přímé porovnání hesla
-            if ($pass !== $row['password']) {
+            if ($pin !== $row['password']) {
                 header("Location: ./login?error=" . urlencode("Neplatné přihlašovací údaje"));
                 exit();
             }

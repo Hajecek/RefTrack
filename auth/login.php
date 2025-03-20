@@ -154,6 +154,35 @@ $info = isset($_GET['info']) ? $_GET['info'] : '';
             background-color: rgba(48, 209, 88, 0.2);
             color: #30d158;
         }
+        
+        .pin-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .pin-input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 20px;
+            border-radius: 12px;
+            border: none;
+            background-color: #2c2c2e;
+            color: #fff;
+            transition: background-color 0.2s;
+        }
+        
+        .pin-input:focus {
+            background-color: #3a3a3c;
+            outline: none;
+        }
+        
+        /* Skryjeme původní pole pro heslo */
+        #password-field {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -192,7 +221,22 @@ $info = isset($_GET['info']) ? $_GET['info'] : '';
             </div>
             
             <div class="form-group">
-                <input type="password" name="password" placeholder="Heslo">
+                <div class="pin-container">
+                    <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                </div>
+                <input type="hidden" name="password" id="password-field">
+                <div id="pin-error" class="status-message error" style="display: none; margin-top: 10px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Zadejte prosím pouze číslice (0-9).</span>
+                </div>
+                <div id="incomplete-pin-error" class="status-message error" style="display: none; margin-top: 10px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Zadejte prosím celý PIN kód.</span>
+                </div>
             </div>
             
             <button type="submit" class="submit-btn">Přihlásit se</button>
@@ -204,5 +248,135 @@ $info = isset($_GET['info']) ? $_GET['info'] : '';
             </a>
         </div>
     </div>
+    
+    <script>
+        // JavaScript pro automatické přeskakování mezi PIN políčky
+        document.addEventListener('DOMContentLoaded', function() {
+            const pinInputs = document.querySelectorAll('.pin-input');
+            const passwordField = document.getElementById('password-field');
+            const form = document.getElementById('login-form');
+            const pinError = document.getElementById('pin-error');
+            const incompletePinError = document.getElementById('incomplete-pin-error');
+            
+            // Autofocus na první PIN políčko po zadání uživatelského jména
+            document.querySelector('input[name="login_id"]').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    pinInputs[0].focus();
+                }
+            });
+            
+            // Funkce pro zvýraznění neplatného vstupu
+            function showError(errorElement) {
+                // Skrýt všechny chybové hlášky
+                pinError.style.display = 'none';
+                incompletePinError.style.display = 'none';
+                
+                // Zobrazit konkrétní chybovou hlášku
+                errorElement.style.display = 'flex';
+                
+                // Zbarvit PIN políčka
+                pinInputs.forEach(input => {
+                    input.style.backgroundColor = '#3a2a2a';
+                    input.style.border = '1px solid #ff453a';
+                });
+            }
+            
+            // Funkce pro resetování chybového stavu
+            function resetError() {
+                pinError.style.display = 'none';
+                incompletePinError.style.display = 'none';
+                
+                pinInputs.forEach(input => {
+                    input.style.backgroundColor = '#2c2c2e';
+                    input.style.border = 'none';
+                });
+            }
+            
+            // Automatický přeskok na další políčko
+            pinInputs.forEach((input, index) => {
+                // Kontrola vstupu
+                input.addEventListener('input', function(e) {
+                    // Kontrola, zda je vstup číslo
+                    if (!/^[0-9]*$/.test(this.value)) {
+                        this.value = ''; // Vymazat neplatný vstup
+                        showError(pinError);
+                        return;
+                    }
+                    
+                    resetError();
+                    
+                    if (this.value.length === 1) {
+                        // Přeskočit na další políčko
+                        if (index < pinInputs.length - 1) {
+                            pinInputs[index + 1].focus();
+                        }
+                    }
+                });
+                
+                // Mazání a přeskok zpět
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                        pinInputs[index - 1].focus();
+                        resetError();
+                    }
+                });
+                
+                // Reakce na paste event
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    resetError();
+                    
+                    // Získat text ze schránky
+                    const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                    
+                    // Kontrola, zda jsou všechny znaky číslice
+                    if (!/^\d+$/.test(pasteData)) {
+                        showError(pinError);
+                        return;
+                    }
+                    
+                    // Rozdělit data do jednotlivých políček
+                    const digits = pasteData.split('');
+                    
+                    for (let i = 0; i < Math.min(digits.length, pinInputs.length); i++) {
+                        pinInputs[i].value = digits[i];
+                    }
+                    
+                    // Zaměřit se na další prázdné políčko nebo poslední políčko
+                    const nextEmptyIndex = Math.min(digits.length, pinInputs.length - 1);
+                    pinInputs[nextEmptyIndex].focus();
+                });
+            });
+            
+            // Před odesláním formuláře spojit PIN kód
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Zkontrolovat, zda jsou všechna pole vyplněna
+                const emptyInputs = Array.from(pinInputs).filter(input => !input.value);
+                if (emptyInputs.length > 0) {
+                    showError(incompletePinError);
+                    // Zaměřit se na první prázdné políčko
+                    emptyInputs[0].focus();
+                    return;
+                }
+                
+                const pinCode = Array.from(pinInputs).map(input => input.value).join('');
+                
+                // Zkontrolovat, zda je PIN kompletní (mělo by být vždy splněno díky předchozí kontrole)
+                if (pinCode.length !== 5) {
+                    showError(incompletePinError);
+                    return;
+                }
+                
+                // Nastavit PIN jako heslo
+                passwordField.value = pinCode;
+                
+                // Odeslat formulář
+                this.submit();
+            });
+        });
+    </script>
 </body>
 </html>
