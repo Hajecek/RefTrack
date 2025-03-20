@@ -199,8 +199,8 @@ $info = isset($_GET['info']) ? $_GET['info'] : '';
         </form>
         
         <div class="forgot-password">
-            <a href="recovery">
-                <i class="fas fa-question-circle"></i> Zapomenuté heslo
+            <a href="registration">
+                <i class="fas fa-user-plus"></i> Nemáte účet? Registrujte se
             </a>
         </div>
     </div>
