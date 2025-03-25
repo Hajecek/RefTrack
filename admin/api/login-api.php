@@ -55,6 +55,7 @@ if (isset($_POST['login_id']) && isset($_POST['password'])) {
             $_SESSION['last_name'] = $row['last_name'];
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
+            $_SESSION['pair_code'] = $row['pair_code'];
             $_SESSION['profile_image'] = $row['profile_image'];
             $_SESSION['sport'] = $row['sport'];
             
@@ -80,6 +81,7 @@ if (isset($_POST['login_id']) && isset($_POST['password'])) {
                 "last_name" => $row['last_name'],
                 "email" => $row['email'],
                 "role" => $row['role'],
+                "pair_code" => $row['pair_code'],
                 "profile_image" => $row['profile_image'],
                 "sport" => $row['sport'],
                 "birth_date" => $row['birth_date']
