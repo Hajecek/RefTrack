@@ -21,16 +21,31 @@ if (!$conn) {
 // Získání user_id z GET parametru
 $userId = $_GET['user_id'] ?? null;
 
-if (!$userId || !is_numeric($userId)) {
+// Debug výpis pro kontrolu přijatého user_id
+error_log("Received user_id: " . $userId);
+
+// Kontrola existence a validity user_id
+if (!$userId) {
     echo json_encode([
         "status" => "error",
-        "message" => "Chybí nebo neplatný parametr user_id",
+        "message" => "Chybí parametr user_id",
         "matches" => []
     ]);
     exit();
 }
 
-// SQL dotaz pro získání všech sloupců
+// Převod na integer a kontrola, zda je to platné číslo
+$userId = filter_var($userId, FILTER_VALIDATE_INT);
+if ($userId === false || $userId <= 0) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Neplatný parametr user_id",
+        "matches" => []
+    ]);
+    exit();
+}
+
+// Příprava SQL dotazu s prepared statement
 $sql = "SELECT * FROM matches WHERE user_id = ? ORDER BY match_date ASC";
 
 $stmt = mysqli_prepare($conn, $sql);
@@ -44,10 +59,11 @@ if (!$stmt) {
     exit();
 }
 
+// Bindování parametru
 mysqli_stmt_bind_param($stmt, "i", $userId);
-$executed = mysqli_stmt_execute($stmt);
 
-if (!$executed) {
+// Provedení dotazu
+if (!mysqli_stmt_execute($stmt)) {
     echo json_encode([
         "status" => "error",
         "message" => "Chyba při provádění dotazu: " . mysqli_stmt_error($stmt),
@@ -56,6 +72,7 @@ if (!$executed) {
     exit();
 }
 
+// Získání výsledků
 $result = mysqli_stmt_get_result($stmt);
 
 if (!$result) {
@@ -67,6 +84,7 @@ if (!$result) {
     exit();
 }
 
+// Zpracování výsledků
 $matches = array();
 while ($row = mysqli_fetch_assoc($result)) {
     // Formátování data
@@ -74,9 +92,11 @@ while ($row = mysqli_fetch_assoc($result)) {
     $matches[] = $row;
 }
 
+// Uzavření statementu a připojení
 mysqli_stmt_close($stmt);
 mysqli_close($conn);
 
+// Vrácení odpovědi
 if (empty($matches)) {
     echo json_encode([
         "status" => "success",
